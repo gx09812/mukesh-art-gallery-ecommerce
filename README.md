@@ -3,10 +3,11 @@
 A creative art gallery webpage to showcase Mukesh’s drawings and offer custom artwork for sale.  
 Built for my native community, combining portfolio display with simple e‑commerce features.
 
-## 👥 Authors
-- gx09812
-- Narenselvan28
+## 👥 Team Role
 
+- **gx09812** – Frontend Developer & Simulation & Lead Project Developer 
+- **Narenselvan28** – Backend Developer & Interface Engineer
+  
 ## ✨ Features
 - Portfolio gallery for drawings
 - Simple e‑commerce ordering system
