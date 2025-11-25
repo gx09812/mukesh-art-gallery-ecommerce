@@ -5,8 +5,8 @@ Built for my native community, combining portfolio display with simple e‑comme
 
 ## 👥 Team Role
 
-- **gx09812** – Frontend Developer & Simulation & Lead Project Developer 
-- **Narenselvan28** – Backend Developer & Interface Engineer
+- [**gx09812**](https://github.com/gx09812) – Frontend Developer & Simulation & Lead Project Developer
+-  [**Narenselvan28**](https://github.com/Narenselvan28)  – Backend Developer & Interface Engineer
   
 ## ✨ Features
 - Portfolio gallery for drawings
