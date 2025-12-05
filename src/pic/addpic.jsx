@@ -47,10 +47,10 @@ export const LoginScreen = () => {
 export const AddPicPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [title, setTitle] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadedUrl, setUploadedUrl] = useState("");
 
-  // Handle file select
   const handleFileChange = (e, category) => {
     setSelectedFile(e.target.files[0]);
     setSelectedCategory(category);
@@ -58,19 +58,19 @@ export const AddPicPage = () => {
     setUploadedUrl("");
   };
 
-  // Upload to backend
+  // UPLOAD TO BACKEND
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!selectedFile || !selectedCategory) {
-      setUploadMessage("Please select a file.");
+
+    if (!selectedFile || !selectedCategory || !title) {
+      setUploadMessage("Please fill title & select image.");
       return;
     }
 
     const formData = new FormData();
-    
-    // ✅ FIXED ORDER
-    formData.append("section", selectedCategory);  // send category first
-    formData.append("image", selectedFile);        // then send the file
+    formData.append("section", selectedCategory);
+    formData.append("title", title);
+    formData.append("image", selectedFile);
 
     try {
       const res = await fetch("http://localhost:5000/upload", {
@@ -81,16 +81,16 @@ export const AddPicPage = () => {
       const data = await res.json();
 
       if (data.success) {
-        setUploadMessage("Uploaded successfully!");
+        setUploadMessage("Image Uploaded & Saved!");
         setUploadedUrl(data.filePath);
+        setTitle("");
+        setSelectedFile(null);
       }
     } catch (err) {
-      console.log(err);
-      setUploadMessage("Upload failed.");
+      setUploadMessage("Error uploading.");
     }
   };
 
-  // UI upload box
   const UploadBox = ({ onChange, file }) => (
     <label className="w-full border-2 border-dashed rounded-2xl h-48 flex flex-col items-center justify-center cursor-pointer bg-white">
       {file ? (
@@ -108,10 +108,11 @@ export const AddPicPage = () => {
     </label>
   );
 
-  // Each upload block
-  const SectionBlock = ({ title, category }) => (
-    <motion.div className="p-8 bg-gray-50 rounded-2xl shadow-xl border mb-10 w-full sm:w-[48%] lg:w-[30%]">
-      <h3 className="text-2xl font-bold mb-6">{title}</h3>
+  const SectionBlock = ({ titleText, category }) => (
+    <motion.div
+      className="p-8 bg-gray-50 rounded-2xl shadow-xl border mb-10 w-full sm:w-[48%] lg:w-[30%]"
+    >
+      <h3 className="text-2xl font-bold mb-6">{titleText}</h3>
 
       <form onSubmit={handleUpload} className="space-y-6">
         <UploadBox
@@ -123,6 +124,8 @@ export const AddPicPage = () => {
           type="text"
           required
           placeholder="Artwork Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           className="w-full px-4 py-3 border rounded-lg"
         />
 
@@ -140,26 +143,23 @@ export const AddPicPage = () => {
   return (
     <div className="bg-white min-h-[80vh] p-10">
       <h1 className="text-4xl font-bold mb-10 flex items-center">
-        <User className="mr-3" /> Admin - Photo Upload
+        <User className="mr-3" /> Admin - Upload Photos
       </h1>
 
-      {/* MAIN SECTIONS */}
       <div className="flex flex-wrap gap-6">
-        <SectionBlock title="Home Screen Picture" category="home" />
-        <SectionBlock title="Articles Image" category="articles" />
-        <SectionBlock title="Free Gift Image" category="freegift" />
+        <SectionBlock titleText="Home Screen Picture" category="home" />
+        <SectionBlock titleText="Articles Image" category="articles" />
+        <SectionBlock titleText="Free Gift Image" category="freegift" />
       </div>
 
-      {/* GALLERY */}
       <h2 className="text-3xl mt-10 mb-6">Gallery Categories</h2>
 
       <div className="flex flex-wrap gap-6">
-        <SectionBlock title="Portrait Artwork" category="gallery_portrait" />
-        <SectionBlock title="Creative Art" category="gallery_creative" />
-        <SectionBlock title="Spiritual Commission Art" category="gallery_spiritual" />
+        <SectionBlock titleText="Portrait Artwork" category="gallery_portrait" />
+        <SectionBlock titleText="Creative Art" category="gallery_creative" />
+        <SectionBlock titleText="Spiritual Commission Art" category="gallery_spiritual" />
       </div>
 
-      {/* Upload result */}
       {uploadMessage && (
         <div className="mt-6 text-green-600 text-lg">
           <p>{uploadMessage}</p>
