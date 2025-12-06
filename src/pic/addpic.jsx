@@ -43,11 +43,11 @@ export const LoginScreen = () => {
   );
 };
 
+
 // ADD PIC PAGE
 export const AddPicPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [title, setTitle] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadedUrl, setUploadedUrl] = useState("");
 
@@ -58,17 +58,17 @@ export const AddPicPage = () => {
     setUploadedUrl("");
   };
 
-  // UPLOAD TO BACKEND
-  const handleUpload = async (e) => {
+  // UPLOAD FUNCTION (UPDATED)
+  const handleUpload = async (e, { title, category }) => {
     e.preventDefault();
 
-    if (!selectedFile || !selectedCategory || !title) {
+    if (!selectedFile || !title || !category) {
       setUploadMessage("Please fill title & select image.");
       return;
     }
 
     const formData = new FormData();
-    formData.append("section", selectedCategory);
+    formData.append("section", category);
     formData.append("title", title);
     formData.append("image", selectedFile);
 
@@ -83,8 +83,10 @@ export const AddPicPage = () => {
       if (data.success) {
         setUploadMessage("Image Uploaded & Saved!");
         setUploadedUrl(data.filePath);
-        setTitle("");
+
+        // Reset file after upload
         setSelectedFile(null);
+        setSelectedCategory("");
       }
     } catch (err) {
       setUploadMessage("Error uploading.");
@@ -108,37 +110,45 @@ export const AddPicPage = () => {
     </label>
   );
 
-  const SectionBlock = ({ titleText, category }) => (
-    <motion.div
-      className="p-8 bg-gray-50 rounded-2xl shadow-xl border mb-10 w-full sm:w-[48%] lg:w-[30%]"
-    >
-      <h3 className="text-2xl font-bold mb-6">{titleText}</h3>
+  // SECTION BLOCK (EACH HAS OWN TITLE STATE)
+  const SectionBlock = ({ titleText, category }) => {
+    const [localTitle, setLocalTitle] = useState("");
 
-      <form onSubmit={handleUpload} className="space-y-6">
-        <UploadBox
-          onChange={(e) => handleFileChange(e, category)}
-          file={selectedFile && selectedCategory === category ? selectedFile : null}
-        />
+    return (
+      <motion.div className="p-8 bg-gray-50 rounded-2xl shadow-xl border mb-10 w-full sm:w-[48%] lg:w-[30%]">
+        <h3 className="text-2xl font-bold mb-6">{titleText}</h3>
 
-        <input
-          type="text"
-          required
-          placeholder="Artwork Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full px-4 py-3 border rounded-lg"
-        />
-
-        <button
-          type="submit"
-          disabled={!selectedFile || selectedCategory !== category}
-          className="w-full py-3 rounded-full bg-[#778259] text-white disabled:bg-gray-400"
+        <form
+          onSubmit={(e) =>
+            handleUpload(e, { title: localTitle, category })
+          }
+          className="space-y-6"
         >
-          Upload <ArrowRight className="inline ml-2" />
-        </button>
-      </form>
-    </motion.div>
-  );
+          <UploadBox
+            onChange={(e) => handleFileChange(e, category)}
+            file={selectedFile && selectedCategory === category ? selectedFile : null}
+          />
+
+          <input
+            type="text"
+            required
+            placeholder="Artwork Title"
+            value={localTitle}
+            onChange={(e) => setLocalTitle(e.target.value)}
+            className="w-full px-4 py-3 border rounded-lg"
+          />
+
+          <button
+            type="submit"
+            disabled={!selectedFile || selectedCategory !== category}
+            className="w-full py-3 rounded-full bg-[#778259] text-white disabled:bg-gray-400"
+          >
+            Upload <ArrowRight className="inline ml-2" />
+          </button>
+        </form>
+      </motion.div>
+    );
+  };
 
   return (
     <div className="bg-white min-h-[80vh] p-10">
@@ -146,6 +156,7 @@ export const AddPicPage = () => {
         <User className="mr-3" /> Admin - Upload Photos
       </h1>
 
+      {/* TOP CATEGORIES */}
       <div className="flex flex-wrap gap-6">
         <SectionBlock titleText="Home Screen Picture" category="home" />
         <SectionBlock titleText="Articles Image" category="articles" />
@@ -154,12 +165,14 @@ export const AddPicPage = () => {
 
       <h2 className="text-3xl mt-10 mb-6">Gallery Categories</h2>
 
+      {/* GALLERY CATEGORIES */}
       <div className="flex flex-wrap gap-6">
         <SectionBlock titleText="Portrait Artwork" category="gallery_portrait" />
         <SectionBlock titleText="Creative Art" category="gallery_creative" />
         <SectionBlock titleText="Spiritual Commission Art" category="gallery_spiritual" />
       </div>
 
+      {/* Upload Status */}
       {uploadMessage && (
         <div className="mt-6 text-green-600 text-lg">
           <p>{uploadMessage}</p>
