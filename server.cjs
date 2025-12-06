@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 
-//   ✅ MySQL Connection
+//    MySQL Connection
 
 const db = mysql.createConnection({
   host: "localhost",
@@ -25,7 +25,7 @@ db.connect((err) => {
 });
 
 
-//   ✅ Auto-create table if not exists
+//    Auto-create table if not exists
 
 db.query(`
   CREATE TABLE IF NOT EXISTS uploaded_images (
@@ -38,7 +38,7 @@ db.query(`
 `);
 
 
-//   ✅ Multer Storage (Category-wise folders)
+//    Multer Storage (Category-wise folders)
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -62,7 +62,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-//   ✅ Upload API + Save to MySQL
+//    Upload API + Save to MySQL
 
 app.post("/upload", upload.single("image"), (req, res) => {
   const { title, section } = req.body;
@@ -93,12 +93,12 @@ app.post("/upload", upload.single("image"), (req, res) => {
 });
 
 
-//   ✅ Serve Uploaded Files
+//    Serve Uploaded Files
 
 app.use("/uploads", express.static("uploads"));
 
 
-//   ✅ Server Start
+//    Server Start
 
 const PORT = 5000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
