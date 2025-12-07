@@ -94,7 +94,7 @@ const Community = () => {
               Free Workshop <span className="text-yellow-300">Now going</span>
             </h2>
             <p className="text-xl opacity-90 max-w-3xl mx-auto">
-              Join quickly my WhatsApp channel to get updates and free access to exclusive content, tutorials, and workshop announcements!
+              Join quickly my WhatsApp channel to get updates and free access to exclusive content, tutorials,  workshop and recording Available!
             </p>
           </motion.div>
 

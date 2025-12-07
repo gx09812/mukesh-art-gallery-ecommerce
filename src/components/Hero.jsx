@@ -120,7 +120,7 @@ const Hero = () => {
             <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden">
               <img
               
-                src="https://i.ibb.co/VpgMdKNm/Screenshot-2025-12-07-004517.png"
+                src="https://i.ibb.co/RpX1gQ55/1000804747-01.jpg"
                 alt="Pencil sketch artwork"
                 className="w-full h-full object-cover"
               />
