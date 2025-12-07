@@ -91,10 +91,10 @@ const Community = () => {
               🎉
             </motion.div>
             <h2 className="font-heading text-4xl lg:text-5xl font-bold mb-6">
-              Free Workshop <span className="text-yellow-300">Coming Soon!</span>
+              Free Workshop <span className="text-yellow-300">Now going</span>
             </h2>
             <p className="text-xl opacity-90 max-w-3xl mx-auto">
-              Join my WhatsApp channel to get updates and free access to exclusive content, tutorials, and workshop announcements!
+              Join quickly my WhatsApp channel to get updates and free access to exclusive content, tutorials, and workshop announcements!
             </p>
           </motion.div>
 
