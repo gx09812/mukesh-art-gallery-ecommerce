@@ -10,12 +10,13 @@ app.use(cors());
 app.use(express.json());
 
 
-//    MySQL Connection
+
+//  DATABASE CONNECTION
 
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "good",   
+  password: "good",
   database: "art_gallery"
 });
 
@@ -25,28 +26,28 @@ db.connect((err) => {
 });
 
 
-//    Auto-create table if not exists
+
+//  CREATE TABLE IF NOT EXISTS
 
 db.query(`
   CREATE TABLE IF NOT EXISTS uploaded_images (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    category VARCHAR(100) NOT NULL,
-    image_path VARCHAR(255) NOT NULL,
+    title VARCHAR(255),
+    category VARCHAR(255),
+    image_path VARCHAR(255),
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `);
 
 
-//    Multer Storage (Category-wise folders)
+
+//  MULTER STORAGE
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const category = req.body.section;
+  destination: (req, file, cb) => {
+    const folder = req.body.section;
+    const uploadPath = path.join("uploads", folder);
 
-    const uploadPath = path.join("uploads", category);
-
-    // Create folder if not exists
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
@@ -54,7 +55,7 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
 
-  filename: function (req, file, cb) {
+  filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   }
 });
@@ -62,7 +63,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-//    Upload API + Save to MySQL
+
+//  UPLOAD ROUTE
 
 app.post("/upload", upload.single("image"), (req, res) => {
   const { title, section } = req.body;
@@ -73,14 +75,11 @@ app.post("/upload", upload.single("image"), (req, res) => {
 
   const filePath = `/uploads/${section}/${req.file.filename}`;
 
-  const sql = `
-    INSERT INTO uploaded_images (title, category, image_path)
-    VALUES (?, ?, ?)
-  `;
+  const sql = `INSERT INTO uploaded_images (title, category, image_path) VALUES (?, ?, ?)`;
 
   db.query(sql, [title, section, filePath], (err, result) => {
     if (err) {
-      console.log(err);
+      console.log("MySQL Error:", err);
       return res.json({ success: false });
     }
 
@@ -93,12 +92,75 @@ app.post("/upload", upload.single("image"), (req, res) => {
 });
 
 
-//    Serve Uploaded Files
+
+//  SEARCH ROUTE
+
+app.get("/search", (req, res) => {
+  const q = req.query.q;
+
+  db.query(
+    "SELECT * FROM uploaded_images WHERE title LIKE ? LIMIT 50",
+    [`%${q}%`],
+    (err, results) => {
+      if (err) return res.json([]);
+      res.json(results);
+    }
+  );
+});
+
+
+
+//  DELETE by ID
+
+app.delete("/delete/:id", (req, res) => {
+  const id = req.params.id;
+
+  db.query("SELECT image_path FROM uploaded_images WHERE id = ?", [id], (err, rows) => {
+    if (rows.length === 0) return res.json({ success: false });
+
+    const imagePath = rows[0].image_path;
+
+    fs.unlink("." + imagePath, () => {
+      db.query("DELETE FROM uploaded_images WHERE id = ?", [id]);
+      res.json({ success: true });
+    });
+  });
+});
+
+
+
+//  DELETE by TITLE  **(THIS IS WHAT YOU WANTED)**
+
+app.delete("/delete", (req, res) => {
+  const title = req.query.title;
+
+  if (!title) return res.json({ success: false, message: "No title given" });
+
+  db.query("SELECT image_path FROM uploaded_images WHERE title = ?", [title], (err, rows) => {
+    if (err || rows.length === 0) {
+      return res.json({ success: false, message: "Image not found" });
+    }
+
+    const imagePath = rows[0].image_path;
+
+    // Delete image file
+    fs.unlink("." + imagePath, () => {
+      db.query("DELETE FROM uploaded_images WHERE title = ?", [title], (err2) => {
+        if (err2) return res.json({ success: false });
+        res.json({ success: true });
+      });
+    });
+  });
+});
+
+
+
+//  SERVE STATIC FILES
 
 app.use("/uploads", express.static("uploads"));
 
 
-//    Server Start
 
-const PORT = 5000;
-app.listen(PORT, () => console.log("Server running on port " + PORT));
+//  START SERVER
+
+app.listen(5000, () => console.log("Server running on port 5000"));
