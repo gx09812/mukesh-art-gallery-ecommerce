@@ -12,7 +12,7 @@ app.use(express.json());
 // Categories that allow only one image
 const singleImageCategories = ["home", "articles", "freegift"];
 
-// ---------- DATABASE ----------
+//  DATABASE 
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -24,7 +24,7 @@ db.connect((err) => {
   if (err) throw err;
   console.log("MySQL Connected");
 
-  // ---------- REVIEWS TABLE ----------
+  //  REVIEWS TABLE 
   db.query(`
     CREATE TABLE IF NOT EXISTS reviews (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +38,7 @@ db.connect((err) => {
     console.log("Reviews table checked/created");
   });
 
-  // ---------- UPLOADED IMAGES TABLE ----------
+  //  UPLOADED IMAGES TABLE 
   db.query(`
     CREATE TABLE IF NOT EXISTS uploaded_images (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -53,7 +53,7 @@ db.connect((err) => {
   });
 });
 
-// ---------- MULTER STORAGE ----------
+//  MULTER STORAGE 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const category = req.body.category;
@@ -71,7 +71,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// ---------- ROUTES ----------
+//  ROUTES 
 
 // Upload endpoint
 app.post("/upload", upload.single("image"), (req, res) => {
