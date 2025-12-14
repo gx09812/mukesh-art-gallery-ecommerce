@@ -126,6 +126,7 @@ const SearchBar = ({ onOpenFullImage }) => {
         )}
       </div>
 
+
       {/* Dropdown */}
       {results.length > 0 && (
         <div className="absolute left-0 right-0 bg-white border rounded-xl shadow-lg mt-2 z-50 max-h-96 overflow-y-auto">
@@ -210,7 +211,7 @@ export const AddPicPage = () => {
     }
 
     const formData = new FormData();
-    formData.append("section", category);
+    formData.append("category", category);
     formData.append("title", title);
     formData.append("image", selectedFile);
 
@@ -515,3 +516,4 @@ export const AddPicPage = () => {
     </div>
   );
 };
+

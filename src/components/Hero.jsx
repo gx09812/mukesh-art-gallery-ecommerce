@@ -1,19 +1,64 @@
 // src/components/Hero.jsx
-import React from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Palette, MessageCircle, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { scrollToSection } from "../utils/utils";
 import { fadeInRight } from "../utils/motion";
 
+const iconButtons = [
+  {
+    name: "Instagram",
+    href: 'https://instagram.com/mukesh_.arts',
+    icon: "https://cdn-icons-png.flaticon.com/512/174/174855.png",
+    bg: "bg-white",
+    text: "text-pink-600",
+    hoverBg: "hover:bg-gradient-to-r hover:from-pink-500 hover:to-orange-500",
+    hoverText: "hover:text-white"
+  },
+  {
+    name: "YouTube",
+    href:'https://youtube.com/@mukesh_arts_?feature=shared',
+    icon: "https://cdn-icons-png.flaticon.com/512/1384/1384060.png",
+    bg: "bg-white",
+    text: "text-red-600",
+    hoverBg: "hover:bg-red-600",
+    hoverText: "hover:text-white"
+  },
+  {
+    name: "WhatsApp",
+    href: 'https://whatsapp.com/channel/0029Vb6kVtK3mFY6Gdm0sF3S',
+    icon: "https://cdn-icons-png.flaticon.com/512/733/733585.png",
+    bg: "bg-white",
+    text: "text-green-600",
+    hoverBg: "hover:bg-green-500",
+    hoverText: "hover:text-white"
+  }
+];
+
 const Hero = () => {
   const navigate = useNavigate();
+
+  const [homeImg, setHomeImg] = useState("");
+
+  // Load Home Image From Backend
+  useEffect(() => {
+    fetch("http://localhost:5000/get/home")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.image_path) {
+          setHomeImg("http://localhost:5000" + data.image_path);
+        }
+      })
+      .catch(err => console.error("Home image load error", err));
+  }, []);
 
   return (
     <section
       id="hero"
       className="relative flex flex-col-reverse md:flex-row items-center justify-between px-6 md:px-20 py-16 bg-gradient-to-b from-white to-gray-50 min-h-screen pt-32"
     >
+
       {/* LEFT CONTENT */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -21,13 +66,11 @@ const Hero = () => {
         transition={{ duration: 0.8 }}
         className="w-full md:w-1/2 text-center md:text-left"
       >
-        {/* Tag */}
         <span className="inline-flex items-center gap-2 px-4 py-1 mb-4 text-sm font-medium text-gray-700 bg-gray-100 rounded-full shadow-sm">
           <Palette size={16} className="text-[#778259]" />
           Professional Pencil Sketch Artist
         </span>
 
-        {/* Headings */}
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-snug">
           I’m Mukesh Pandian
         </h1>
@@ -36,15 +79,13 @@ const Hero = () => {
           a pencil sketch <span className="text-[#778259]">artist</span>
         </h2>
 
-        {/* Paragraph */}
         <div className="w-full flex justify-center">
-            <p className="text-gray-600 mt-4 leading-relaxed text-center max-w-lg md:max-w-2xl">
-                Bringing your precious memories to life through detailed pencil artistry.
-                Each stroke tells a story, and every shade captures emotion.
-                 </p>
-                 </div>
+          <p className="text-gray-600 mt-4 leading-relaxed text-center max-w-lg md:max-w-2xl">
+            Bringing your precious memories to life through detailed pencil artistry.
+            Each stroke tells a story, and every shade captures emotion.
+          </p>
+        </div>
 
-        {/* Buttons */}
         <div className="flex flex-wrap gap-4 mt-8 justify-center md:justify-start">
           <button
             onClick={() => navigate("/gallery")}
@@ -61,31 +102,44 @@ const Hero = () => {
           </button>
         </div>
 
-        {/* Social Links */}
-        <div className="flex flex-wrap gap-4 mt-10 justify-center md:justify-start">
-          <a
-            href="#"
-            className="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm shadow"
-          >
-            📷 Instagram
-          </a>
 
-          <a
-            href="#"
-            className="bg-gradient-to-r from-red-500 to-red-700 text-white px-4 py-2 rounded-full text-sm shadow"
-          >
-            📹 YouTube
-          </a>
+<div className="flex flex-wrap gap-4 items-center mt-8">
+  {iconButtons.map((btn, idx) => (
+    <a
+      key={idx}
+      href={btn.href}
+      target="_blank"
+      rel="noreferrer"
+      className={`
+        flex items-center gap-2
+        h-12
+        px-3 md:px-5        /* 🔹 mobile small | desktop normal */
+        rounded-full
+        shadow-lg cursor-pointer
+        font-semibold
+        transition-colors duration-200
 
-          <a
-            href="#"
-            className="bg-green-500 text-white px-4 py-2 rounded-full text-sm shadow"
-          >
-            💬 WhatsApp Channel
-          </a>
-        </div>
+        ${btn.bg}
+        ${btn.text}
+        ${btn.hoverBg}
+        ${btn.hoverText}
+      `}
+    >
+      <img
+        src={btn.icon}
+        alt={btn.name}
+        className="w-6 h-6"
+      />
 
-        {/* Scroll Down */}
+      {/* hide text only on very small screens if needed */}
+      <span className="">
+        {btn.name}
+      </span>
+    </a>
+  ))}
+</div>
+
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, y: [0, 10, 0] }}
@@ -111,7 +165,6 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="relative w-72 sm:w-80 md:w-96"
         >
-          {/* Decorative Frames */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#778259] to-[#8c9d75] rounded-2xl transform rotate-3 scale-105 opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-tl from-[#778259] to-[#8c9d75] rounded-2xl transform -rotate-3 scale-105 opacity-20" />
 
@@ -119,14 +172,15 @@ const Hero = () => {
           <div className="relative bg-white p-4 rounded-2xl shadow-2xl">
             <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden">
               <img
-              
-                src="https://i.ibb.co/RpX1gQ55/1000804747-01.jpg"
-                alt="Pencil sketch artwork"
+                src={
+                  homeImg ||
+                  "https://via.placeholder.com/400x600?text=Loading..."
+                }
+                alt="Home Screen Artwork"
                 className="w-full h-full object-cover"
               />
             </div>
 
-            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -140,6 +194,7 @@ const Hero = () => {
           </div>
         </motion.div>
       </motion.div>
+
     </section>
   );
 };

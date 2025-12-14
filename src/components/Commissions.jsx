@@ -3,33 +3,40 @@ import { Palette, Clock, Star, MessageCircle, CheckCircle } from 'lucide-react';
 import { fadeInUp, staggerContainer } from '../utils/motion';
 import { Link } from 'react-router-dom';
 
-const Commissions = () => {
-  const services = [
-    {
-      title: 'Custom Portraits',
-      description: 'Detailed pencil portraits of your loved ones, pets, or special memories',
-      features: ['High-quality graphite work', 'Multiple size options', 'Digital preview included'],
-      price: 'Starting from ₹2,500',
-      duration: '7-10 days'
-    },
-    {
-      title: 'Special Occasion Artworks',
-      description: 'Commemorative pieces for weddings, anniversaries, graduations, and more',
-      features: ['Custom composition', 'Personalized elements', 'Gift packaging available'],
-      price: 'Starting from ₹3,500',
-      duration: '10-14 days'
-    },
-    {
-      title: 'Memorial Portraits',
-      description: 'Heartfelt tribute artworks to honor and remember loved ones',
-      features: ['Sensitive approach', 'Multiple photo references', 'Complimentary consultation'],
-      price: 'Starting from ₹3,000',
-      duration: '10-12 days'
-    }
-  ];
+const services = [
+  {
+    title: 'Custom Portraits',
+    description: 'Detailed pencil portraits of your loved ones, pets, or special memories',
+    features: ['High-quality graphite work', 'Multiple size options', 'Digital preview included'],
+    price: '₹2,500+',
+    duration: '7-10 days'
+  },
+  {
+    title: 'Special Occasion Artworks',
+    description: 'Commemorative pieces for weddings, anniversaries, graduations, and more',
+    features: ['Custom composition', 'Personalized elements', 'Gift packaging available'],
+    price: '₹3,500+',
+    duration: '10-14 days'
+  },
+  {
+    title: 'Memorial Portraits',
+    description: 'Heartfelt tribute artworks to honor and remember loved ones',
+    features: ['Sensitive approach', 'Multiple photo references', 'Complimentary consultation'],
+    price: '₹3,000+',
+    duration: '10-12 days'
+  }
+];
 
+const steps = [
+  { step: '1', title: 'Contact', desc: 'Reach out with your idea' },
+  { step: '2', title: 'Discuss', desc: 'Share photos and preferences' },
+  { step: '3', title: 'Create', desc: 'I craft your artwork' },
+  { step: '4', title: 'Deliver', desc: 'Receive your masterpiece' }
+];
+
+const Commissions = () => {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           variants={staggerContainer}
@@ -38,158 +45,136 @@ const Commissions = () => {
           viewport={{ once: true }}
         >
           {/* Header */}
-          <motion.div className="text-center mb-16" variants={fadeInUp}>
-            <h2 className="font-heading text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <motion.div className="text-center mb-20" variants={fadeInUp}>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
               Commission <span className="text-[#778259]">Services</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Transform your precious memories into timeless pencil sketch artworks. Each piece is crafted with care and attention to detail.
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+              Transform your memories into timeless pencil sketch artworks with attention to detail and care.
             </p>
           </motion.div>
 
           {/* Services Grid */}
           <motion.div
-            className="grid lg:grid-cols-3 gap-8 mb-16"
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"
             variants={staggerContainer}
           >
-            {services.map((service, index) => (
+            {services.map((service, idx) => (
               <motion.div
-                key={index}
+                key={idx}
                 variants={fadeInUp}
-                whileHover={{ y: -10 }}
-                className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 shadow-lg border border-gray-100 group"
+                whileHover={{ y: -6 }}
+                className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 group transition hover:shadow-2xl"
               >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="w-16 h-16 bg-gradient-to-br from-[#778259] to-[#8c9d75] rounded-2xl flex items-center justify-center mb-6"
-                >
-                  <Palette className="h-8 w-8 text-white" />
-                </motion.div>
-
-                <h3 className="font-heading text-2xl font-bold text-gray-900 mb-4">
-                  {service.title}
-                </h3>
-
-                <p className="text-gray-600 mb-6">
-                  {service.description}
-                </p>
-
-                <div className="space-y-3 mb-6">
-                  {service.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center space-x-3">
-                      <CheckCircle className="h-5 w-5 text-[#778259] flex-shrink-0" />
-                      <span className="text-gray-700 text-sm">{feature}</span>
-                    </div>
-                  ))}
+                <div className="w-16 h-16 mb-6 rounded-xl bg-gradient-to-br from-[#778259] to-[#8c9d75] flex items-center justify-center transition-transform group-hover:scale-110">
+                  <Palette className="w-8 h-8 text-white" />
                 </div>
 
-                <div className="border-t border-gray-200 pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <Star className="h-4 w-4 text-[#8c9d75]" />
-                      <span className="text-lg font-semibold text-gray-900">{service.price}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{service.duration}</span>
-                    </div>
+                <h3 className="text-2xl font-bold mb-4">{service.title}</h3>
+                <p className="text-gray-600 mb-6">{service.description}</p>
+
+                <ul className="space-y-2 mb-6">
+                  {service.features.map((feat, i) => (
+                    <li key={i} className="flex items-center gap-3 text-gray-700 text-sm">
+                      <CheckCircle className="w-5 h-5 text-[#778259]" />
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex justify-between items-center border-t border-gray-200 pt-4">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-[#8c9d75]" />
+                    <span className="font-semibold text-gray-900">{service.price}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm">{service.duration}</span>
                   </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Process Section */}
+          {/* Process Steps */}
           <motion.div
-            className="bg-gradient-to-br from-[#778259] to-[#8c9d75] rounded-3xl p-12 text-white mb-16"
+            className="bg-gradient-to-br from-[#778259] to-[#8c9d75] rounded-3xl p-12 text-white mb-20"
             variants={fadeInUp}
           >
-            <div className="text-center mb-12">
-              <h3 className="font-heading text-3xl font-bold mb-4">
-                How It Works
-              </h3>
-              <p className="text-xl opacity-90">
-                Simple steps to get your custom artwork
-              </p>
-            </div>
-
+            <h3 className="text-3xl font-bold text-center mb-12">How It Works</h3>
             <div className="grid md:grid-cols-4 gap-8">
-              {[
-                { step: '1', title: 'Contact', desc: 'Reach out with your idea' },
-                { step: '2', title: 'Discuss', desc: 'Share photos and preferences' },
-                { step: '3', title: 'Create', desc: 'I craft your artwork' },
-                { step: '4', title: 'Deliver', desc: 'Receive your masterpiece' }
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  variants={fadeInUp}
-                  className="text-center"
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold"
-                  >
-                    {item.step}
-                  </motion.div>
-                  <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
-                  <p className="text-sm opacity-80">{item.desc}</p>
+              {steps.map((step, i) => (
+                <motion.div key={i} variants={fadeInUp} className="text-center">
+                  <div className="w-16 h-16 mb-4 rounded-full bg-white/20 flex items-center justify-center mx-auto font-bold text-2xl transition-transform hover:scale-110">
+                    {step.step}
+                  </div>
+                  <h4 className="font-semibold text-lg mb-2">{step.title}</h4>
+                  <p className="text-sm opacity-90">{step.desc}</p>
                 </motion.div>
               ))}
             </div>
           </motion.div>
 
-          {/* Call to Action */}
-          <motion.div
-            className="text-center"
-            variants={fadeInUp}
-          >
-            <h3 className="font-heading text-3xl font-bold text-gray-900 mb-6">
-              Ready to Commission Your Artwork?
-            </h3>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Let's discuss your vision and create something beautiful together. I'm here to bring your ideas to life.
-            </p>
+         {/* Call to Action */}
+<motion.div className="text-center" variants={fadeInUp}>
+  <h3 className="text-3xl font-bold mb-6">
+    Ready to Commission Your Artwork?
+  </h3>
+  <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+    Let's discuss your vision and create something beautiful together.
+  </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.a
-                href="https://wa.me/919944991358"
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-[#778259] text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-3 hover:bg-[#8c9d75] transition-colors shadow-lg"
-              >
-                <MessageCircle className="h-5 w-5" />
-                WhatsApp Me
-              </motion.a>
+  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+    {/* WhatsApp */}
+    <motion.a
+      href="https://wa.me/919944991358"
+      target="_blank"
+      rel="noopener noreferrer"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="flex items-center gap-3 px-8 py-4 rounded-full bg-[#778259] text-white shadow-lg border-2 border-transparent hover:border-white hover:bg-[#8c9d75] transition-all"
+    >
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+        alt="WhatsApp"
+        className="w-5 h-5"
+      />
+      WhatsApp Me
+    </motion.a>
 
-              <motion.a
-                href="mailto:mukeshpandian005@gmail.com"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="border-2 border-[#778259] text-[#778259] px-8 py-4 rounded-full font-semibold hover:bg-[#778259] hover:text-white transition-all shadow-lg"
-              >
-                Send Email
-              </motion.a>
+    {/* Email */}
+    <motion.a
+      href="mailto:mukeshpandian005@gmail.com"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="flex items-center gap-3 px-8 py-4 rounded-full border-2 border-[#778259] text-[#778259] shadow-lg hover:bg-[#778259] hover:text-white transition-all"
+    >
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Mail_%28iOS%29.svg"
+        alt="Email"
+        className="w-5 h-5"
+      />
+      Send Email
+    </motion.a>
 
-              <Link to="/gallery">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="border-2 border-[#778259] text-[#778259] px-8 py-4 rounded-full font-semibold hover:bg-[#778259] hover:text-white transition-all shadow-lg"
-                  onClick={() => {
-                    // This will navigate to gallery and auto-select 'special' category
-                    setTimeout(() => {
-                      const specialButton = document.querySelector('[data-category="special"]');
-                      if (specialButton) specialButton.click();
-                    }, 100);
-                  }}
-                >
-                  See Commission Work
-                </motion.button>
-              </Link>
-            </div>
-          </motion.div>
+    {/* Gallery */}
+    <Link to="/gallery">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="flex items-center gap-3 px-8 py-4 rounded-full border-2 border-[#778259] text-[#778259] shadow-lg hover:bg-[#778259] hover:text-white transition-all"
+      >
+        <img
+          src="https://thumbnail.imgbin.com/0/1/24/colored-pencil-decorative-yellow-pencil-with-colorful-splash-5GzsAL8U_t.jpg"
+          alt="Gallery"
+          className="w-5 h-5"
+        />
+        See Commission Work
+      </motion.button>
+    </Link>
+  </div>
+</motion.div>
+
         </motion.div>
       </div>
     </section>

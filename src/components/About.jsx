@@ -1,46 +1,57 @@
 // src/components/About.jsx
 
-import { motion } from 'framer-motion';
-import { Palette, Eye, Users, Award, Brush, Heart, User } from 'lucide-react';
-import { fadeInUp, staggerContainer, fadeInLeft, fadeInRight } from '../utils/motion';
-import { Section } from '../utils/utils';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Palette, Eye, Users, Award, Brush, Heart, User } from "lucide-react";
+import { fadeInUp, staggerContainer, fadeInLeft, fadeInRight } from "../utils/motion";
+import { Section } from "../utils/utils";
 
 const About = () => {
-    
-    // Artist Image URL
-    const artistImage = "https://i.ibb.co/N6W3Gcn5/IMG-20250827-123837411.jpg";
 
+    // Load Artist Image From Backend
+    const [artistImage, setArtistImage] = useState("");
+
+    useEffect(() => {
+        fetch("http://localhost:5000/get/articles")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.image_path) {
+                    setArtistImage("http://localhost:5000" + data.image_path);
+                }
+            })
+            .catch(err => console.error("About image load error", err));
+    }, []);
 
     const skills = [
         {
-            title: 'Portrait Drawing',
-            description: 'Capturing emotions and personality in detailed portraits',
+            title: "Portrait Drawing",
+            description: "Capturing emotions and personality in detailed portraits",
             icon: Users
         },
         {
-            title: 'Realistic Sketching',
-            description: 'Creating lifelike representations with precision',
+            title: "Realistic Sketching",
+            description: "Creating lifelike representations with precision",
             icon: Eye
         },
         {
-            title: 'Detail Work',
-            description: 'Intricate attention to textures and fine details',
+            title: "Detail Work",
+            description: "Intricate attention to textures and fine details",
             icon: Award
         },
         {
-            title: 'Custom Commissions',
-            description: 'Personalized artwork for special occasions',
+            title: "Custom Commissions",
+            description: "Personalized artwork for special occasions",
             icon: Palette
         },
         {
-            title: 'Shading Techniques',
-            description: 'Advanced light and shadow manipulation',
+            title: "Shading Techniques",
+            description: "Advanced light and shadow manipulation",
             icon: Brush
         }
     ];
 
     return (
-        <Section 
+        <Section
             id="about"
             title="Meet the Artist"
             icon={User}
@@ -53,7 +64,7 @@ const About = () => {
                 whileInView="show"
                 viewport={{ once: true }}
             >
-                {/* Left Side */}
+                {/* Left Content */}
                 <motion.div variants={fadeInLeft}>
                     <motion.h2
                         className="font-heading text-4xl lg:text-5xl font-bold text-gray-900 mb-8"
@@ -70,7 +81,6 @@ const About = () => {
                         <h1 className="font-bold text-gray-800 text-2xl">What I Believe In</h1>
                     </motion.div>
 
-                    {/* Belief Boxes */}
                     <motion.div className="grid grid-cols-3 gap-6 mt-12" variants={fadeInUp}>
                         <div className="text-center">
                             <motion.div
@@ -106,7 +116,7 @@ const About = () => {
                         </div>
                     </motion.div>
 
-                    {/* Skills Section */}
+                    {/* Skills */}
                     <motion.div className="mt-16" variants={fadeInUp}>
                         <h3 className="font-heading text-3xl font-bold text-gray-900 mb-8 text-center">
                             Skills & <span className="text-[#778259]">Specialization</span>
@@ -114,7 +124,7 @@ const About = () => {
 
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {skills.map((skill, index) => {
-                                const IconComponent = skill.icon;
+                                const Icon = skill.icon;
 
                                 return (
                                     <motion.div
@@ -128,7 +138,7 @@ const About = () => {
                                             whileHover={{ scale: 1.1, rotate: 5 }}
                                             className="w-14 h-14 bg-gradient-to-br from-[#778259] to-[#8c9d75] rounded-xl flex items-center justify-center mb-4"
                                         >
-                                            <IconComponent className="h-7 w-7 text-white" />
+                                            <Icon className="h-7 w-7 text-white" />
                                         </motion.div>
 
                                         <h4 className="font-heading text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#778259] transition-colors">
@@ -144,23 +154,21 @@ const About = () => {
                         </div>
                     </motion.div>
                 </motion.div>
-                
 
-                {/* Right Image Side */}
+                {/* Right Image */}
                 <motion.div variants={fadeInRight} className="relative">
                     <motion.div
                         whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.3 }}
                         className="relative bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl p-8 shadow-xl"
                     >
-                        <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-xl flex items-center justify-center bg-white">
+                        <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-xl bg-white flex items-center justify-center">
 
-                            {/* IF STATEMENT → If image exists show it else show placeholder */}
                             {artistImage ? (
                                 <img
                                     src={artistImage}
-                                    alt="Artist Mukesh Pandian"
-                                    className="w-full h-full object-cover object-center rounded-xl"
+                                    alt="Artist"
+                                    className="w-full h-full object-cover rounded-xl"
                                 />
                             ) : (
                                 <div className="text-center text-gray-500">
@@ -175,7 +183,6 @@ const About = () => {
                         </div>
                     </motion.div>
 
-                    {/* Decorative Rings */}
                     <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -187,6 +194,7 @@ const About = () => {
                         className="absolute -bottom-4 -left-4 w-16 h-16 border-4 border-[#8c9d75] rounded-full opacity-30"
                     />
                 </motion.div>
+
             </motion.div>
         </Section>
     );

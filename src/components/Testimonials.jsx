@@ -2,42 +2,30 @@ import { motion } from 'framer-motion';
 import { Star, Quote, Clock, MapPin } from 'lucide-react';
 import { fadeInUp, staggerContainer } from '../utils/motion';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+const API_URL = "http://localhost:5000/reviews";
 
 const Testimonials = () => {
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Coming Soon',
-      role: 'Happy Client',
-      content: 'Client testimonials will be displayed here once received',
-      rating: 5,
-      image: '👤'
-    },
-    {
-      id: 2,
-      name: 'Future Review',
-      role: 'Commission Client',
-      content: 'Amazing artwork testimonials from satisfied customers',
-      rating: 5,
-      image: '👥'
-    },
-    {
-      id: 3,
-      name: 'Upcoming Feedback',
-      role: 'Workshop Attendee',
-      content: 'Workshop and learning experience reviews will appear here',
-      rating: 5,
-      image: '🎨'
-    }
-  ];
-
+  const [testimonials, setTestimonials] = useState([]);
   const [isClicked, setIsClicked] = useState(false);
 
   const handleBoxClick = () => {
     setIsClicked(true);
     setTimeout(() => setIsClicked(false), 300);
   };
+
+  // 🔹 Fetch reviews from server
+  useEffect(() => {
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setTestimonials(data.reviews);
+        }
+      })
+      .catch(err => console.error("Review fetch error:", err));
+  }, []);
 
   return (
     <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
@@ -48,11 +36,13 @@ const Testimonials = () => {
           whileInView="show"
           viewport={{ once: true }}
         >
+
           {/* Info Boxes */}
           <motion.div
             className="grid md:grid-cols-2 gap-8 mb-16"
             variants={staggerContainer}
           >
+           
             {/* Business Hours Box */}
             <motion.div
               variants={fadeInUp}
@@ -123,11 +113,11 @@ const Testimonials = () => {
 
           {/* Header */}
           <motion.div className="text-center mb-16" variants={fadeInUp}>
-            <h2 className="font-heading text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
               What People <span className="text-[#778259]">Say</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Testimonials from happy clients and workshop participants will be featured here as they come in
+            <p className="text-xl text-gray-600">
+              Real feedback from clients
             </p>
           </motion.div>
 
@@ -136,98 +126,62 @@ const Testimonials = () => {
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
             variants={staggerContainer}
           >
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.id}
-                variants={fadeInUp}
-                custom={index}
-                whileHover={{ y: -5 }}
-                className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative group"
-              >
-                {/* Quote Icon */}
+            {testimonials.length > 0 ? (
+              testimonials.map((t, index) => (
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="absolute -top-4 -left-4 w-12 h-12 bg-[#778259] rounded-full flex items-center justify-center"
+                  key={t.id}
+                  variants={fadeInUp}
+                  custom={index}
+                  whileHover={{ y: -5 }}
+                  className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative"
                 >
-                  <Quote className="h-6 w-6 text-white" />
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-[#778259] rounded-full flex items-center justify-center">
+                    <Quote className="h-6 w-6 text-white" />
+                  </div>
+
+                  <div className="flex space-x-1 mb-4">
+                    {[...Array(t.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+
+                  <p className="text-gray-700 mb-6 italic">
+                    "{t.review}"
+                  </p>
+
+                  <h4 className="font-semibold text-gray-900">{t.name}</h4>
                 </motion.div>
-
-                {/* Rating */}
-                <div className="flex space-x-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: i * 0.1 }}
-                    >
-                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Content */}
-                <p className="text-gray-700 mb-6 italic leading-relaxed">
-                  "{testimonial.content}"
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#778259] to-[#8c9d75] rounded-full flex items-center justify-center text-white text-xl">
-                    {testimonial.image}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-600">{testimonial.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500 text-center col-span-full">
+                No reviews yet. Be the first to leave one!
+              </p>
+            )}
           </motion.div>
 
-          {/* Placeholder Message */}
+          {/* CTA */}
           <motion.div
-            className={`text-center bg-white rounded-2xl p-12 shadow-lg border border-gray-100 cursor-pointer transition-transform duration-300 ${
-              isClicked ? 'scale-105' : 'scale-100'
+            className={`text-center bg-white rounded-2xl p-12 shadow-lg border cursor-pointer ${
+              isClicked ? 'scale-105' : ''
             }`}
             variants={fadeInUp}
             onClick={handleBoxClick}
-            whileHover={{ scale: 1.02 }}
           >
-            <motion.div
-              animate={{
-                scale: [1, 1.1, 1],
-                rotate: [0, 5, -5, 0]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                repeatDelay: 2
-              }}
-              className="text-6xl mb-6"
-            >
-              ⭐
-            </motion.div>
-
-            <h3 className="font-heading text-2xl font-bold text-gray-900 mb-4">
+            <h3 className="text-2xl font-bold mb-4">
               Your Review Could Be Here!
             </h3>
-
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              I'm building my portfolio and would love to hear from clients about their experience.
-              If you've worked with me or attended a workshop, please share your feedback!
-            </p>
 
             <Link to="/reviews">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#778259] text-white px-8 py-4 rounded-full font-semibold hover:bg-[#8c9d75] transition-colors shadow-lg"
+                className="bg-[#778259] text-white px-8 py-4 rounded-full font-semibold"
               >
                 Share Your Experience
               </motion.button>
             </Link>
           </motion.div>
+
         </motion.div>
       </div>
     </section>
@@ -235,3 +189,4 @@ const Testimonials = () => {
 };
 
 export default Testimonials;
+
