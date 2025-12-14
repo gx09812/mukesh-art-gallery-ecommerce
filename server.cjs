@@ -9,10 +9,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Categories that allow only one image
+const singleImageCategories = ["home", "articles", "freegift"];
 
-
-//  DATABASE CONNECTION
-
+// ---------- DATABASE ----------
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -23,38 +23,47 @@ const db = mysql.createConnection({
 db.connect((err) => {
   if (err) throw err;
   console.log("MySQL Connected");
+
+  // ---------- REVIEWS TABLE ----------
+  db.query(`
+    CREATE TABLE IF NOT EXISTS reviews (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      review TEXT NOT NULL,
+      rating INT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `, (err) => {
+    if (err) throw err;
+    console.log("Reviews table checked/created");
+  });
+
+  // ---------- UPLOADED IMAGES TABLE ----------
+  db.query(`
+    CREATE TABLE IF NOT EXISTS uploaded_images (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      title VARCHAR(255),
+      category VARCHAR(255),
+      image_path VARCHAR(255),
+      uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `, (err) => {
+    if (err) throw err;
+    console.log("Uploaded Images table checked/created");
+  });
 });
 
-
-
-//  CREATE TABLE IF NOT EXISTS
-
-db.query(`
-  CREATE TABLE IF NOT EXISTS uploaded_images (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255),
-    category VARCHAR(255),
-    image_path VARCHAR(255),
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-
-
-
-//  MULTER STORAGE
-
+// ---------- MULTER STORAGE ----------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const folder = req.body.section;
-    const uploadPath = path.join("uploads", folder);
+    const category = req.body.category;
+    if (!category) return cb(new Error("Category missing"), null);
 
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
+    const uploadPath = path.join("uploads", category);
+    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
 
     cb(null, uploadPath);
   },
-
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   }
@@ -62,105 +71,174 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// ---------- ROUTES ----------
 
-
-//  UPLOAD ROUTE
-
+// Upload endpoint
 app.post("/upload", upload.single("image"), (req, res) => {
-  const { title, section } = req.body;
+  const { title, category } = req.body;
 
-  if (!req.file) {
-    return res.json({ success: false, message: "No file uploaded" });
+  if (!req.file || !category) {
+    return res.json({ success: false, message: "Missing data" });
   }
 
-  const filePath = `/uploads/${section}/${req.file.filename}`;
+  const filePath = `/uploads/${category}/${req.file.filename}`;
 
-  const sql = `INSERT INTO uploaded_images (title, category, image_path) VALUES (?, ?, ?)`;
+  if (singleImageCategories.includes(category)) {
+    // 🔹 Step 1: Get old image
+    db.query(
+      "SELECT image_path FROM uploaded_images WHERE category = ?",
+      [category],
+      (err, rows) => {
+        if (err) return res.json({ success: false });
 
-  db.query(sql, [title, section, filePath], (err, result) => {
-    if (err) {
-      console.log("MySQL Error:", err);
-      return res.json({ success: false });
-    }
+        // 🔹 Step 2: Delete old file if exists
+        if (rows.length > 0) {
+          const oldFile = "." + rows[0].image_path;
+          if (fs.existsSync(oldFile)) {
+            fs.unlinkSync(oldFile);
+          }
+        }
 
-    res.json({
-      success: true,
-      filePath: filePath,
-      id: result.insertId
-    });
-  });
+        // 🔹 Step 3: Delete old DB row FIRST
+        db.query(
+          "DELETE FROM uploaded_images WHERE category = ?",
+          [category],
+          (err) => {
+            if (err) return res.json({ success: false });
+
+            // 🔹 Step 4: Insert new image
+            db.query(
+              "INSERT INTO uploaded_images (title, category, image_path) VALUES (?, ?, ?)",
+              [title, category, filePath],
+              (err, result) => {
+                if (err) {
+                  return res.json({
+                    success: false,
+                    message: "Duplicate blocked by DB"
+                  });
+                }
+
+                res.json({
+                  success: true,
+                  message: "Free image replaced successfully",
+                  id: result.insertId,
+                  image_path: filePath
+                });
+              }
+            );
+          }
+        );
+      }
+    );
+  } else {
+    // 🔹 Multiple image categories
+    db.query(
+      "INSERT INTO uploaded_images (title, category, image_path) VALUES (?, ?, ?)",
+      [title, category, filePath],
+      (err, result) => {
+        if (err) return res.json({ success: false });
+
+        res.json({
+          success: true,
+          id: result.insertId,
+          image_path: filePath
+        });
+      }
+    );
+  }
 });
 
-
-
-//  SEARCH ROUTE
-
-app.get("/search", (req, res) => {
-  const q = req.query.q;
-
+// Get latest image by category
+app.get("/get/:category", (req, res) => {
+  const category = req.params.category;
   db.query(
-    "SELECT * FROM uploaded_images WHERE title LIKE ? LIMIT 50",
-    [`%${q}%`],
-    (err, results) => {
-      if (err) return res.json([]);
-      res.json(results);
+    "SELECT * FROM uploaded_images WHERE category = ? ORDER BY uploaded_at DESC LIMIT 1",
+    [category],
+    (err, rows) => {
+      if (err) return res.json({ success: false });
+      if (!rows || rows.length === 0) return res.json({ success: false });
+
+      res.json({
+        success: true,
+        id: rows[0].id,
+        title: rows[0].title,
+        image_path: rows[0].image_path
+      });
     }
   );
 });
 
+// Gallery images
+app.get("/gallery", (req, res) => {
+  const { category, page = 1, limit = 6 } = req.query;
+  const offset = (page - 1) * limit;
 
+  let sql = "SELECT * FROM uploaded_images";
+  let params = [];
 
-//  DELETE by ID
+  if (category && category !== "all") {
+    sql += " WHERE category = ?";
+    params.push(category);
+  }
 
-app.delete("/delete/:id", (req, res) => {
-  const id = req.params.id;
+  sql += " ORDER BY uploaded_at DESC LIMIT ? OFFSET ?";
+  params.push(Number(limit), Number(offset));
 
-  db.query("SELECT image_path FROM uploaded_images WHERE id = ?", [id], (err, rows) => {
-    if (rows.length === 0) return res.json({ success: false });
+  db.query(sql, params, (err, rows) => {
+    if (err) return res.json({ success: false });
+    res.json({ success: true, artworks: rows });
+  });
+});
 
-    const imagePath = rows[0].image_path;
+// Delete by title
+app.delete("/delete", (req, res) => {
+  const title = req.query.title;
+  if (!title) return res.json({ success: false, message: "No title given" });
 
-    fs.unlink("." + imagePath, () => {
-      db.query("DELETE FROM uploaded_images WHERE id = ?", [id]);
+  db.query("SELECT image_path FROM uploaded_images WHERE title = ?", [title], (err, rows) => {
+    if (!rows || rows.length === 0) return res.json({ success: false });
+
+    fs.unlink("." + rows[0].image_path, () => {
+      db.query("DELETE FROM uploaded_images WHERE title = ?", [title]);
       res.json({ success: true });
     });
   });
 });
 
+// Add review
+app.post("/reviews", (req, res) => {
+  const { name, review, rating } = req.body;
 
+  if (!name || !review || !rating) {
+    return res.json({ success: false });
+  }
 
-//  DELETE by TITLE  **(THIS IS WHAT YOU WANTED)**
-
-app.delete("/delete", (req, res) => {
-  const title = req.query.title;
-
-  if (!title) return res.json({ success: false, message: "No title given" });
-
-  db.query("SELECT image_path FROM uploaded_images WHERE title = ?", [title], (err, rows) => {
-    if (err || rows.length === 0) {
-      return res.json({ success: false, message: "Image not found" });
+  db.query(
+    "INSERT INTO reviews (name, review, rating) VALUES (?, ?, ?)",
+    [name, review, rating],
+    err => {
+      if (err) return res.json({ success: false });
+      res.json({ success: true });
     }
-
-    const imagePath = rows[0].image_path;
-
-    // Delete image file
-    fs.unlink("." + imagePath, () => {
-      db.query("DELETE FROM uploaded_images WHERE title = ?", [title], (err2) => {
-        if (err2) return res.json({ success: false });
-        res.json({ success: true });
-      });
-    });
-  });
+  );
 });
 
+// Get all reviews
+app.get("/reviews", (req, res) => {
+  db.query(
+    "SELECT * FROM reviews ORDER BY created_at DESC",
+    (err, rows) => {
+      if (err) return res.json({ success: false });
+      res.json({
+        success: true,
+        reviews: rows
+      });
+    }
+  );
+});
 
-
-//  SERVE STATIC FILES
-
+// Serve static files
 app.use("/uploads", express.static("uploads"));
 
-
-
-//  START SERVER
-
+// Start server
 app.listen(5000, () => console.log("Server running on port 5000"));
