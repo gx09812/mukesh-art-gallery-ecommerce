@@ -302,59 +302,64 @@ export const AddPicPage = () => {
   };
 
   /* UploadBox component (reused inside sections) */
-  const UploadBox = ({ onChange, file }) => (
-    <label className="w-full border-2 border-dashed rounded-2xl h-48 flex flex-col items-center justify-center cursor-pointer bg-white">
-      {file ? (
-        <img
-          src={URL.createObjectURL(file)}
-          className="w-full h-full object-cover rounded-2xl"
-        />
-      ) : (
-        <div className="flex flex-col items-center gap-2">
-          <PlusCircle className="text-4xl text-[#778259]" />
-          <p>Select Image</p>
-        </div>
-      )}
-      <input type="file" className="hidden" onChange={onChange} />
-    </label>
-  );
+  const UploadBox = ({ onChange, file, isPdf }) => {
+     if (isPdf) {
+       return (
+         <label className="w-full border-2 border-dashed border-red-400 bg-red-50 h-48 rounded-2xl flex flex-col items-center justify-center cursor-pointer">
+           <PlusCircle className="text-red-600 text-4xl" />
+           <p className="mt-2">{file ? file.name : "Select PDF"}</p>
+           <input type="file" accept="application/pdf" className="hidden" onChange={onChange} />
+         </label>
+       );
+     }
+     return (
+       <label className="w-full border-2 border-dashed rounded-2xl h-48 flex flex-col items-center justify-center cursor-pointer bg-white">
+         {file ? (
+           <img src={URL.createObjectURL(file)} className="w-full h-full object-cover rounded-2xl" />
+         ) : (
+           <div className="flex flex-col items-center gap-2">
+             <PlusCircle className="text-4xl text-[#778259]" />
+             <p>Select Image</p>
+           </div>
+         )}
+         <input type="file" className="hidden" onChange={onChange} />
+       </label>
+     );
+   };
 
   /* Section Block (upload card) */
-  const SectionBlock = ({ titleText, category }) => {
-    const [localTitle, setLocalTitle] = useState("");
+const SectionBlock = ({ titleText, category, type }) => {
+  const [localTitle, setLocalTitle] = useState("");
 
-    return (
-      <motion.div className="p-8 bg-gray-50 rounded-2xl shadow-xl border mb-10 w-full sm:w-[48%] lg:w-[30%]">
-        <h3 className="text-2xl font-bold mb-6">{titleText}</h3>
+  return (
+    <motion.div className="p-8 bg-gray-50 rounded-2xl shadow-xl border mb-10 w-full sm:w-[48%] lg:w-[30%]">
+      <h3 className="text-2xl font-bold mb-6">{titleText}</h3>
+      <form onSubmit={(e) => handleUpload(e, { title: localTitle, category })} className="space-y-6">
+        <UploadBox
+          onChange={(e) => handleFileChange(e, category)}
+          file={selectedFile && selectedCategory === category ? selectedFile : null}
+          isPdf={type === "pdf"} // ✅ Now this works
+        />
+        <input
+          type="text"
+          required
+          placeholder="Title"
+          value={localTitle}
+          onChange={(e) => setLocalTitle(e.target.value)}
+          className="w-full px-4 py-3 border rounded-lg"
+        />
+        <button
+          type="submit"
+          disabled={!selectedFile || selectedCategory !== category}
+          className="w-full py-3 rounded-full bg-[#778259] text-white disabled:bg-gray-400"
+        >
+          Upload <ArrowRight className="inline ml-2" />
+        </button>
+      </form>
+    </motion.div>
+  );
+};
 
-        <form onSubmit={(e) => handleUpload(e, { title: localTitle, category })} className="space-y-6">
-
-          <UploadBox
-            onChange={(e) => handleFileChange(e, category)}
-            file={selectedFile && selectedCategory === category ? selectedFile : null}
-          />
-
-          <input
-            type="text"
-            required
-            placeholder="Artwork Title"
-            value={localTitle}
-            onChange={(e) => setLocalTitle(e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg"
-          />
-
-          <button
-            type="submit"
-            disabled={!selectedFile || selectedCategory !== category}
-            className="w-full py-3 rounded-full bg-[#778259] text-white disabled:bg-gray-400"
-          >
-            Upload <ArrowRight className="inline ml-2" />
-          </button>
-
-        </form>
-      </motion.div>
-    );
-  };
 
   return (
     <div className="bg-white min-h-[80vh] p-10">
@@ -370,6 +375,8 @@ export const AddPicPage = () => {
         <SectionBlock titleText="Home Screen Picture" category="home" />
         <SectionBlock titleText="Articles Image" category="articles" />
         <SectionBlock titleText="Free Gift Image" category="freegift" />
+        <SectionBlock titleText="Free Gift PDF" category="freegift_pdf" type="pdf" />
+
       </div>
 
       <h2 className="text-3xl mt-10 mb-6">Gallery Categories</h2>
@@ -377,6 +384,7 @@ export const AddPicPage = () => {
       <div className="flex flex-wrap gap-6">
         <SectionBlock titleText="Portrait Artwork" category="gallery_portrait" />
         <SectionBlock titleText="Creative Art" category="gallery_creative" />
+        <SectionBlock titleText="Spiritual Commission Art" category="gallery_spiritual" />
         <SectionBlock titleText="Spiritual Commission Art" category="gallery_spiritual" />
       </div>
 
@@ -516,4 +524,3 @@ export const AddPicPage = () => {
     </div>
   );
 };
-
