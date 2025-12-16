@@ -237,6 +237,26 @@ app.get("/reviews", (req, res) => {
   );
 });
 
+// SEARCH IMAGES BY TITLE
+app.get("/search", (req, res) => {
+  const q = req.query.q;
+  if (!q) return res.json([]);
+
+  const searchTerm = `%${q}%`;
+  db.query(
+    "SELECT * FROM uploaded_images WHERE title LIKE ? ORDER BY uploaded_at DESC",
+    [searchTerm],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.json([]);
+      }
+      res.json(rows);
+    }
+  );
+});
+
+
 // Serve static files
 app.use("/uploads", express.static("uploads"));
 
