@@ -16,7 +16,7 @@ const Testimonials = () => {
     setTimeout(() => setIsClicked(false), 300);
   };
 
-  // 🔹 Fetch reviews from server
+  //  Fetch reviews from server
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
@@ -57,10 +57,24 @@ const Testimonials = () => {
                 </motion.div>
                 <h3 className="text-2xl font-bold">Business Hours</h3>
               </div>
-              <div className="space-y-3 text-gray-700">
-                <div className="flex justify-between"><span>Monday - Friday</span><span>9:00 AM - 6:00 PM</span></div>
-                <div className="flex justify-between"><span>Saturday</span><span>10:00 AM - 4:00 PM</span></div>
-                <div className="flex justify-between"><span>Sunday</span><span>By Appointment</span></div>
+               <div className="space-y-3 text-gray-700">
+                <div className="flex justify-between">
+                  <span className="font-medium">Monday - Friday</span>
+                  <span>9:00 AM - 6:00 PM</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Saturday</span>
+                  <span>10:00 AM - 4:00 PM</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Sunday</span>
+                  <span>By Appointment</span>
+                </div>
+                <div className="mt-4 p-3 bg-[#778259]/10 rounded-lg">
+                  <p className="text-sm text-[#778259] font-medium">
+                    💬 Available on WhatsApp for urgent inquiries
+                  </p>
+                </div>
               </div>
             </motion.div>
 
@@ -77,11 +91,23 @@ const Testimonials = () => {
                 >
                   <MapPin className="h-8 w-8 text-white" />
                 </motion.div>
+
                 <h3 className="text-2xl font-bold">Service Area</h3>
               </div>
-              <p className="text-gray-700">
-                Local, nationwide & digital services available
-              </p>
+               <div className="space-y-4 text-gray-700">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Local Services</h4>
+                  <p className="text-sm">In-person consultations and delivery within 25km radius</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Nationwide Shipping</h4>
+                  <p className="text-sm">Secure packaging and delivery across India</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Digital Services</h4>
+                  <p className="text-sm">Online consultations and digital artwork delivery worldwide</p>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
 

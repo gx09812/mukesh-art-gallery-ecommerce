@@ -7,7 +7,7 @@ import { fadeInUp, staggerContainer } from '../utils/motion';
 const API = "http://localhost:5000/reviews";
 
 const ReviewsPage = () => {
-  const navigate = useNavigate(); // ✅ ADDED
+  const navigate = useNavigate(); 
 
   const [formData, setFormData] = useState({
     name: '',
@@ -44,7 +44,7 @@ const ReviewsPage = () => {
 
     if (data.success) {
       setFormData({ name: '', review: '', rating: 0 });
-      navigate('/'); // ✅ GO BACK HOME AFTER POST
+      navigate('/');
     }
 
     setLoading(false);
