@@ -305,8 +305,8 @@ export const AddPicPage = () => {
   const UploadBox = ({ onChange, file, isPdf }) => {
      if (isPdf) {
        return (
-         <label className="w-full border-2 border-dashed border-red-400 bg-red-50 h-48 rounded-2xl flex flex-col items-center justify-center cursor-pointer">
-           <PlusCircle className="text-red-600 text-4xl" />
+         <label className="w-full border-2 border-dashed bg-gray-50 h-48 rounded-2xl flex flex-col items-center justify-center cursor-pointer">
+           <PlusCircle className="text-4xl text-[#778259]" />
            <p className="mt-2">{file ? file.name : "Select PDF"}</p>
            <input type="file" accept="application/pdf" className="hidden" onChange={onChange} />
          </label>
@@ -338,7 +338,7 @@ const SectionBlock = ({ titleText, category, type }) => {
         <UploadBox
           onChange={(e) => handleFileChange(e, category)}
           file={selectedFile && selectedCategory === category ? selectedFile : null}
-          isPdf={type === "pdf"} // ✅ Now this works
+          isPdf={type === "pdf"} 
         />
         <input
           type="text"
