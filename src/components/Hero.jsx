@@ -80,7 +80,7 @@ const Hero = () => {
         </h2>
 
         <div className="w-full flex justify-center">
-          <p className="text-gray-600 mt-4 leading-relaxed text-center max-w-lg md:max-w-2xl">
+          <p className="text-gray-600 mt-6 leading-relaxed  max-w-lg md:max-w-2xl">
             Bringing your precious memories to life through detailed pencil artistry.
             Each stroke tells a story, and every shade captures emotion.
           </p>
@@ -138,7 +138,6 @@ const Hero = () => {
     </a>
   ))}
 </div>
-
 
         <motion.div
           initial={{ opacity: 0 }}
