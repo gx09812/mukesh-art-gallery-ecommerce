@@ -5,6 +5,8 @@ import { fadeInUp, staggerContainer } from '../utils/motion';
 
 const FreeGift = () => {
   const [freeImage, setFreeImage] = useState(null);
+  const [freeFile, setFreeFile] = useState(null);
+
 
   useEffect(() => {
     // Fetch the free image from server
@@ -17,6 +19,16 @@ const FreeGift = () => {
       })
       .catch(err => console.error(err));
   }, []);
+  useEffect(() => {
+  fetch("http://localhost:5000/get/freegift_pdf")
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.image_path) {
+        setFreeFile(`http://localhost:5000${data.image_path}`);
+      }
+    })
+    .catch(err => console.error(err));
+}, []);
 
   return (
     <section id="gift-section" className="py-20 bg-white relative overflow-hidden">
@@ -75,10 +87,19 @@ const FreeGift = () => {
                     <div className="flex items-center space-x-3"><Heart className="h-5 w-5 text-red-300" /><span>Created with love and attention to detail</span></div>
                   </div>
 
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full bg-white text-[#778259] py-4 rounded-xl font-bold flex items-center justify-center space-x-3 hover:bg-gray-100 transition-all shadow-lg">
-                    <Download className="h-5 w-5" />
-                    <span>Download Free PDF</span>
-                  </motion.button>
+                  <motion.a
+  href={freeFile}
+  download
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className={`w-full bg-white text-[#778259] py-4 rounded-xl font-bold flex items-center justify-center space-x-3 hover:bg-gray-100 transition-all shadow-lg ${
+    !freeFile ? "pointer-events-none opacity-50" : ""
+  }`}
+>
+  <Download className="h-5 w-5" />
+  <span>{freeFile ? "Download Free PDF" : "PDF Not Available"}</span>
+</motion.a>
+
                 </div>
               </motion.div>
             </motion.div>
