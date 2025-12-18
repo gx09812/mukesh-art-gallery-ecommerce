@@ -146,7 +146,7 @@ const Contact = () => {
                       value={formData.name}
                       onChange={handleChange}
                       required // HTML5 validation
-                      placeholder="Jane Doe"
+                      placeholder="Enter your name"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#778259] outline-none transition-all"
                     />
                   </div>
@@ -167,7 +167,7 @@ const Contact = () => {
                     />
                   </div>
 
-                  {/* Attachment Upload - OPTIONAL */}
+                  {/* Attachment Upload - OPTIONAL
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Reference Image (Optional)
@@ -197,7 +197,7 @@ const Contact = () => {
                         Remove image
                       </button>
                     )}
-                  </div>
+                  </div> */}
 
                   <button
                     type="submit"

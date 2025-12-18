@@ -8,6 +8,7 @@ const mysql = require("mysql2");
 const axios = require("axios");
 const FormData = require("form-data");
 const { Readable } = require("stream");
+const PDFDocument = require("pdfkit");
 
 const app = express();
 app.use(cors());
@@ -54,75 +55,139 @@ db.connect((err) => {
   });
 });
 
-// --- MULTER STORAGE CONFIGURATIONS ---
+/*  MULTER  */
 
-// 1. Disk Storage (For your Gallery)
-const storage = multer.diskStorage({
+// Disk (Gallery)
+const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const category = req.body.category || "contact_requests"; 
+    const category = req.body.category || "contact_requests";
     const uploadPath = path.join("uploads", category);
     if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
-  }
+  },
 });
 
-// 2. Memory Storage (For Telegram - No Disk Saving)
-const memoryStorage = multer.memoryStorage();
+const upload = multer({ storage: diskStorage });
 
-const upload = multer({ storage });
-const uploadToMemory = multer({ storage: memoryStorage });
+// Memory (Telegram)
+const uploadToMemory = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB safety
+});
 
-// --- ROUTES ---
+/*  IMAGE to  PDF  */
+function imageBufferToPDF(imageBuffer) {
+  return new Promise((resolve) => {
+    const doc = new PDFDocument({ autoFirstPage: false });
+    const buffers = [];
 
-// NEW TELEGRAM ROUTE (Uses Memory Storage)
-app.post("/contact-telegram", uploadToMemory.single("attachment"), async (req, res) => {
-  const { name, message } = req.body;
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+    doc.on("data", buffers.push.bind(buffers));
+    doc.on("end", () => resolve(Buffer.concat(buffers)));
 
-  const caption = `
-🚀 *New Inquiry Received*
---------------------------
-👤 *Name:* ${name}
-📝 *Message:* ${message}
---------------------------
-📅 *Sent at:* ${new Date().toLocaleString()}
-  `;
+    doc.addPage({ size: "A4", margin: 40 });
+    doc.image(imageBuffer, {
+      fit: [520, 750],
+      align: "center",
+      valign: "center",
+    });
 
-  try {
-    if (req.file) {
-      const telegramFormData = new FormData();
-      telegramFormData.append("chat_id", chatId);
-      telegramFormData.append("caption", caption);
-      telegramFormData.append("parse_mode", "Markdown");
+    doc.end();
+  });
+}
 
-      const stream = Readable.from(req.file.buffer);
-      telegramFormData.append("photo", stream, {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
+/*  TELEGRAM ORDER ROUTE  */
+
+
+app.post(
+  "/contact-telegram",
+  uploadToMemory.single("attachment"),
+  async (req, res) => {
+    const { name, message } = req.body;
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    // Clean, safe caption
+    const caption = `🛒 *New Order Received*\n👤 Name: ${name}\n📝 Message: ${message}\n📅 ${new Date().toLocaleString()}`;
+
+    try {
+      // 1️⃣ No file → send just message
+      if (!req.file) {
+        const form = new FormData();
+        form.append("chat_id", chatId);
+        form.append("text", caption);
+        form.append("parse_mode", "Markdown");
+
+        return form.submit(
+          `https://api.telegram.org/bot${botToken}/sendMessage`,
+          (err, telegramRes) => {
+            if (err) {
+              console.error("Telegram Error:", err);
+              return res.status(500).json({ success: false, message: err.message });
+            }
+            telegramRes.on("data", () => {});
+            telegramRes.on("end", () => res.json({ success: true, type: "message" }));
+          }
+        );
+      }
+
+      // 2️⃣ Validate image type
+      if (!req.file.mimetype.startsWith("image/")) {
+        return res.status(400).json({ success: false, message: "Only image files allowed" });
+      }
+
+      // 3️⃣ Validate file size (max 10MB)
+      if (req.file.size > 10 * 1024 * 1024) {
+        return res.status(400).json({ success: false, message: "File too large (max 10MB)" });
+      }
+
+      // 4️⃣ Convert image → PDF
+      const pdfBuffer = await new Promise((resolve) => {
+        const doc = new PDFDocument({ autoFirstPage: false });
+        const buffers = [];
+        doc.on("data", buffers.push.bind(buffers));
+        doc.on("end", () => resolve(Buffer.concat(buffers)));
+
+        doc.addPage({ size: "A4", margin: 40 });
+        doc.image(req.file.buffer, { fit: [520, 750], align: "center", valign: "center" });
+        doc.end();
       });
 
-      await axios.post(
-        `https://api.telegram.org/bot${botToken}/sendPhoto`,
-        telegramFormData,
-        { headers: telegramFormData.getHeaders() }
+      console.log("PDF buffer size:", pdfBuffer.length);
+
+      // 5️⃣ Send PDF to Telegram with caption
+      const formData = new FormData();
+      formData.append("chat_id", chatId);
+      formData.append("caption", caption);
+      formData.append("parse_mode", "Markdown"); // ensures bold, emojis work
+      formData.append(
+        "document",
+        Readable.from(pdfBuffer), // new stream
+        { filename: `order-${Date.now()}.pdf`, contentType: "application/pdf" }
       );
-    } else {
-      await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: chatId,
-        text: caption,
-        parse_mode: "Markdown",
-      });
+
+      formData.submit(
+        `https://api.telegram.org/bot${botToken}/sendDocument`,
+        (err, telegramRes) => {
+          if (err) {
+            console.error("Telegram Error:", err);
+            return res.status(500).json({ success: false, message: err.message });
+          }
+
+          telegramRes.on("data", () => {});
+          telegramRes.on("end", () => res.json({ success: true, type: "pdf" }));
+        }
+      );
+
+    } catch (error) {
+      console.error("Unexpected Error:", error);
+      res.status(500).json({ success: false, message: error.message });
     }
-    res.json({ success: true, message: "Sent to Telegram" });
-  } catch (error) {
-    console.error("Telegram Error:", error.response?.data || error.message);
-    res.status(500).json({ success: false, message: "Failed to send to Telegram" });
   }
-});
+);
+
 
 // ORIGINAL GALLERY UPLOAD ROUTE
 const singleImageCategories = ["home", "articles", "freegift"];
@@ -242,6 +307,21 @@ app.get("/search", (req, res) => {
     }
   );
 });
+app.get("/test-telegram", async (req, res) => {
+  try {
+    await axios.post(
+      `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+      {
+        chat_id: process.env.TELEGRAM_CHAT_ID,
+        text: "Telegram test successful ",
+      }
+    );
+    res.send("OK");
+  } catch (e) {
+    res.status(500).json(e.response?.data || e.message);
+  }
+});
+
 
 app.use("/uploads", express.static("uploads"));
 

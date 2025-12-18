@@ -373,7 +373,7 @@ const SectionBlock = ({ titleText, category, type }) => {
       {/* Upload Sections */}
       <div className="flex flex-wrap gap-6 mt-6">
         <SectionBlock titleText="Home Screen Picture" category="home" />
-        <SectionBlock titleText="Articles Image" category="articles" />
+        <SectionBlock titleText="About Image" category="articles" />
         <SectionBlock titleText="Free Gift Image" category="freegift" />
         <SectionBlock titleText="Free Gift PDF" category="freegift_pdf" type="pdf" />
 
@@ -384,7 +384,6 @@ const SectionBlock = ({ titleText, category, type }) => {
       <div className="flex flex-wrap gap-6">
         <SectionBlock titleText="Portrait Artwork" category="gallery_portrait" />
         <SectionBlock titleText="Creative Art" category="gallery_creative" />
-        <SectionBlock titleText="Spiritual Commission Art" category="gallery_spiritual" />
         <SectionBlock titleText="Spiritual Commission Art" category="gallery_spiritual" />
       </div>
 
